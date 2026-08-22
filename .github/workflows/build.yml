@@ -145,7 +145,7 @@ jobs:
         retention-days: 7
 
 
-  build_switch:
+    build_switch:
     runs-on: ubuntu-latest
 
     container:
@@ -155,13 +155,37 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
 
+    - name: Check Switch toolchain
+      run: |
+        echo "DEVKITPRO=$DEVKITPRO"
+        which aarch64-none-elf-gcc
+        aarch64-none-elf-gcc --version
+        aarch64-none-elf-g++ --version
+
     - name: Build ZeroTierOne for Nintendo Switch
       run: |
         make clean || true
 
         make \
-          CXX=aarch64-none-elf-g++ \
           CC=aarch64-none-elf-gcc \
+          CXX=aarch64-none-elf-g++ \
           AR=aarch64-none-elf-ar \
-          CXXFLAGS="-D__SWITCH__ -DSWITCH" \
-          CFLAGS="-D__SWITCH__ -DSWITCH"
+          STRIP=aarch64-none-elf-strip \
+          RANLIB=aarch64-none-elf-ranlib \
+          CFLAGS="-D__SWITCH__ -DSWITCH" \
+          CXXFLAGS="-D__SWITCH__ -DSWITCH"
+
+    - name: Check build output
+      run: |
+        ls -lah
+        file zerotier-one || true
+
+    - name: Archive Switch build
+      uses: actions/upload-artifact@v4
+      with:
+        name: zerotier-one-switch
+        path: |
+          zerotier-one
+          zerotier-cli
+          zerotier-idtool
+        retention-days: 7
