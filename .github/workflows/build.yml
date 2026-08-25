@@ -157,9 +157,13 @@ jobs:
 
     - name: Check Switch toolchain
       run: |
+        export DEVKITA64=/opt/devkitpro/devkitA64
         export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
         echo "DEVKITPRO=$DEVKITPRO"
         echo "DEVKITA64=$DEVKITA64"
+        echo "Checking devkitA64 toolchain..."
+        test -x "$DEVKITA64/bin/aarch64-none-elf-gcc"
+        test -x "$DEVKITA64/bin/aarch64-none-elf-g++"
         command -v aarch64-none-elf-gcc
         aarch64-none-elf-gcc --version
         aarch64-none-elf-g++ --version
@@ -167,6 +171,7 @@ jobs:
 
     - name: Build ZeroTierOne for Nintendo Switch
       run: |
+        export DEVKITA64=/opt/devkitpro/devkitA64
         export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
 
         make clean || true
