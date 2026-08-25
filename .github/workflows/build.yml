@@ -171,11 +171,34 @@ jobs:
 
     - name: Prepare Switch-compatible headers
       run: |
-        # The Switch toolchain has no Linux endian.h header.
-        sed -i 's/#else \/\* not Windows \*\//#elif !defined(__SWITCH__)/' include/ZeroTierOne.h
-        sed -i 's|^#include <endian.h>$|#if !defined(__SWITCH__)\\n#include <endian.h>\\n#endif|' node/Constants.hpp
-        grep -A10 -B3 '__SWITCH__' include/ZeroTierOne.h | head -20
-        grep -n -A2 -B2 'endian.h' node/Constants.hpp
+        # Do not remove the networking headers from ZeroTierOne.h.
+        # libnx provides the socket structures needed by the Switch build.
+        # Constants.hpp needs a byte-order definition because the Switch
+        # toolchain does not provide Linux's <endian.h>.
+        python3 - <<'PY'
+        from pathlib import Path
+
+        path = Path("node/Constants.hpp")
+        text = path.read_text()
+
+        old = "#ifndef __BYTE_ORDER\n#include <endian.h>\n#endif"
+        new = """#ifndef __BYTE_ORDER
+        #if defined(__SWITCH__)
+        #define __BIG_ENDIAN 4321
+        #define __LITTLE_ENDIAN 1234
+        #define __BYTE_ORDER 1234
+        #else
+        #include <endian.h>
+        #endif
+        #endif"""
+
+        if text.count(old) != 1:
+            raise SystemExit("Expected exactly one generic endian.h include in node/Constants.hpp")
+
+        path.write_text(text.replace(old, new))
+        PY
+
+        grep -n -A9 -B2 'ifndef __BYTE_ORDER' node/Constants.hpp
 
     - name: Build ZeroTierOne for Nintendo Switch
       run: |
