@@ -145,7 +145,7 @@ jobs:
         retention-days: 7
 
 
-    build_switch:
+  build_switch:
     runs-on: ubuntu-latest
 
     container:
@@ -157,21 +157,26 @@ jobs:
 
     - name: Check Switch toolchain
       run: |
+        export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
         echo "DEVKITPRO=$DEVKITPRO"
-        which aarch64-none-elf-gcc
+        echo "DEVKITA64=$DEVKITA64"
+        command -v aarch64-none-elf-gcc
         aarch64-none-elf-gcc --version
         aarch64-none-elf-g++ --version
+        aarch64-none-elf-gcc -dumpmachine
 
     - name: Build ZeroTierOne for Nintendo Switch
       run: |
+        export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
+
         make clean || true
 
         make \
-          CC=aarch64-none-elf-gcc \
-          CXX=aarch64-none-elf-g++ \
-          AR=aarch64-none-elf-ar \
-          STRIP=aarch64-none-elf-strip \
-          RANLIB=aarch64-none-elf-ranlib \
+          CC="$DEVKITA64/bin/aarch64-none-elf-gcc" \
+          CXX="$DEVKITA64/bin/aarch64-none-elf-g++" \
+          AR="$DEVKITA64/bin/aarch64-none-elf-ar" \
+          STRIP="$DEVKITA64/bin/aarch64-none-elf-strip" \
+          RANLIB="$DEVKITA64/bin/aarch64-none-elf-ranlib" \
           CFLAGS="-D__SWITCH__ -DSWITCH" \
           CXXFLAGS="-D__SWITCH__ -DSWITCH"
 
