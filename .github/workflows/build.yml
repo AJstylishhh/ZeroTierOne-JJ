@@ -169,6 +169,11 @@ jobs:
         aarch64-none-elf-g++ --version
         aarch64-none-elf-gcc -dumpmachine
 
+    - name: Prepare Switch-compatible headers
+      run: |
+        sed -i 's/#else \/\* not Windows \*\//#elif !defined(__SWITCH__)/' include/ZeroTierOne.h
+        grep -A10 -B3 '__SWITCH__' include/ZeroTierOne.h | head -20
+
     - name: Build ZeroTierOne for Nintendo Switch
       run: |
         export DEVKITA64=/opt/devkitpro/devkitA64
